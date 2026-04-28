@@ -1,4 +1,4 @@
-from telethon import TelegramClient
+from telethon import TelegramClient, events
 from telethon.sessions import StringSession
 import os
 
