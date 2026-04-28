@@ -6,9 +6,8 @@ import os
 api_id = int(os.getenv("API_ID"))
 api_hash = os.getenv("API_HASH")
 phone = os.getenv("PHONE")
-target = os.getenv("TARGET")
 
-client = TelegramClient('bot', api_id, api_hash)
+client = TelegramClient("bot", api_id, api_hash)
 
 mesajlar = ["OROSPU ÇOCUĞU", "PİÇ KURUSU", "AMINA KOYIM", "SİKTİR GİT", "GÖTVEREN", "YAVŞAK", "SİKİK", "KALTAK", "İT OĞLU İT", "ŞEREFSİZ",
     "AQ", "ANANI SİKEYİM", "BABANI SİKEYİM", "KARDEŞİNİ SİKEYİM", "SENİ SİKEYİM", "ÖL LAN", "GEBER", "DEFOL", "BEYİNSİZ", "SALAK",
@@ -65,29 +64,49 @@ mesajlar = ["OROSPU ÇOCUĞU", "PİÇ KURUSU", "AMINA KOYIM", "SİKTİR GİT", "
 
 running = False
 task = None
+chat_id = None
+reply_id = None
+delay = 2
 
-async def mesaj_dongu(entity):
-    global running
+async def loop():
+    global running, chat_id, reply_id, delay
+
     while running:
         msg = random.choice(mesajlar)
-        await client.send_message(entity, msg)
+
+        await client.send_message(
+            chat_id,
+            msg,
+            reply_to=reply_id
+        )
+
         print("Gönderildi:", msg)
-        await asyncio.sleep(3)
+        await asyncio.sleep(delay)
 
 @client.on(events.NewMessage(pattern=r'\.a'))
-async def baslat(event):
-    global running, task
+async def start(event):
+    global running, task, chat_id, reply_id
+
     if running:
         return await event.reply("Zaten çalışıyor")
 
+    if not event.is_reply:
+        return await event.reply("Bir mesaja reply yapıp .a yaz")
+
+    replied = await event.get_reply_message()
+
+    chat_id = event.chat_id
+    reply_id = replied.id
+
     running = True
-    entity = await client.get_entity(target)
-    task = asyncio.create_task(mesaj_dongu(entity))
+    task = asyncio.create_task(loop())
+
     await event.reply("Başlatıldı")
 
 @client.on(events.NewMessage(pattern=r'\.b'))
-async def durdur(event):
+async def stop(event):
     global running, task
+
     running = False
 
     if task:
@@ -95,6 +114,18 @@ async def durdur(event):
         task = None
 
     await event.reply("Durduruldu")
+
+@client.on(events.NewMessage(pattern=r'\.hız (\\d+)'))
+async def speed(event):
+    global delay
+
+    new_delay = int(event.pattern_match.group(1))
+
+    if new_delay < 1:
+        return await event.reply("En az 1 saniye olmalı")
+
+    delay = new_delay
+    await event.reply(f"Hız: {delay} saniye")
 
 async def main():
     await client.start(phone)
