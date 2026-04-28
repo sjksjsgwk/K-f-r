@@ -1,13 +1,12 @@
-from telethon import TelegramClient, events
-import asyncio
-import random
+from telethon import TelegramClient
+from telethon.sessions import StringSession
 import os
 
 api_id = int(os.getenv("API_ID"))
 api_hash = os.getenv("API_HASH")
-phone = os.getenv("PHONE")
+session = os.getenv("SESSION")
 
-client = TelegramClient("bot", api_id, api_hash)
+client = TelegramClient(StringSession(session), api_id, api_hash)
 
 mesajlar = ["OROSPU ÇOCUĞU", "PİÇ KURUSU", "AMINA KOYIM", "SİKTİR GİT", "GÖTVEREN", "YAVŞAK", "SİKİK", "KALTAK", "İT OĞLU İT", "ŞEREFSİZ",
     "AQ", "ANANI SİKEYİM", "BABANI SİKEYİM", "KARDEŞİNİ SİKEYİM", "SENİ SİKEYİM", "ÖL LAN", "GEBER", "DEFOL", "BEYİNSİZ", "SALAK",
